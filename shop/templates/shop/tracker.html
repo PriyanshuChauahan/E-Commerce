@@ -1,0 +1,145 @@
+{% extends 'shop/basic.html' %} {% block title%} Tracker- Samaan {% endblock %}
+{% block body%}
+<div class="container">
+  <div class="col my-4">
+    <h2 >Enter Your Order Id and Email to track your Order</h2>
+    <form class="row g-3" method="post" action="#" id="trackerform">
+      {% csrf_token %}
+   
+      <div class="col-md-6">
+        <label for="Order_Id" class="form-label">Order Id</label>
+        <input
+          type="number"
+          class="form-control"
+          id="Order_Id"
+          name="Order_Id"
+          placeholder="Enter Your Order Id"
+          required
+        />
+      </div>
+      <div class="col-md-6">
+        <label for="inputEmail" class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="inputEmail"
+          name="inputEmail"
+          placeholder="Enter Your Email"
+          required
+        />
+      </div>
+      <div class="col-12">
+        <button id="place" type="submit" class="btn btn-primary">
+          Track Order
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="col my-4">
+    <h4>Order Status</h4>
+   <ul class="list-group my-3" id="items"></ul>
+  </div>
+  <div class="col my-4">
+    <h4>Your Samaans</h4>
+   <ul class="list-group my-3" id="citems"></ul>
+  </div>
+  <span id="total_amount"></span>
+    
+  </div>
+
+  {% endblock %} {% block js %}
+  <script>
+    var formdata;
+    $('#trackerform').submit(function(event)
+    {
+        $('#items').empty();
+        $('#citems').empty();
+        $('#total_amount').empty();
+         formdata= {
+            'order_id':$('input[name=Order_Id]').val(),
+            'email':$('input[name=inputEmail]').val(),
+            'csrfmiddlewaretoken':$('input[name=csrfmiddlewaretoken]').val()
+        };
+
+    
+    $.ajax({
+        type:"POST",
+        url:'/shop/tracker/',
+        data:formdata,
+        encode: true
+    })
+    .done(function(data){
+    
+      data=JSON.parse(data);
+      
+     
+      
+      
+      totalAmount=data[2];
+      if(data[1]!=undefined)
+      {
+
+        cart_items=JSON.parse(data[1]);
+        updates=data[0];
+      }
+      else
+      {
+        cart_items=[];
+        updates=[];
+      }
+      
+      mystr="";
+      mystr1="";
+      if(updates.length>0 & updates!={}){
+       
+        
+        for(i=0;i<updates.length;i++){
+    
+ 
+       let text=updates[i]['text'];
+       let time=updates[i]['time'];
+       
+       
+       mystr+=` <li class="list-group-item d-flex justify-content-between align-items-center">
+               ${text}
+               <span class="badge bg-primary rounded-pill">${time}</span>
+               </li>`;
+               
+              }
+              document.getElementById('total_amount').innerHTML=`<h4>Total Amount to be Paid : Rs ${totalAmount}</h4>`
+
+        
+    } else
+    {
+      mystr=` <li class="list-group-item d-flex justify-content-between align-items-center">
+               Sorry we are not able to fetch the order details. check order id and email again
+               </li>`;
+              
+               
+               
+              }
+              $('#items').append(mystr);
+              // filling the order details
+              for(item in cart_items)
+              {
+                
+              
+                mystr1+=` <li class="list-group-item d-flex justify-content-between align-items-center">
+               ${cart_items[item][1]}
+               <span class="badge bg-primary rounded-pill">${cart_items[item][0]}</span>
+               </li>`;
+               
+              }
+              $('#citems').append(mystr1);
+             
+            }
+            
+              
+   );
+      event.preventDefault();
+    });
+    
+  
+  </script>
+  {% endblock %}
+</div>

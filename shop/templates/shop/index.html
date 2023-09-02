@@ -1,0 +1,287 @@
+{% extends 'shop/basic.html' %}
+
+{% block title%} Samaan {% endblock %}
+{% block css %} 
+<style> 
+.col-md-3{
+  display: inline-block;
+  margin-left: -4px;
+
+}
+.col-md-3 img{
+  max-width: 278px;
+ height: 204px;
+  
+}
+
+.carousel-control-prev-icon,.carousel-control-next-icon{
+  background-color: black;
+  
+}
+.carousel-control-prev,.carousel-control-next {
+   
+    height: 214px;
+}
+body .no-padding{
+  padding-left:0;
+  padding-right: 0;
+  
+}
+
+
+</style>
+{% endblock %}
+{% block body%} 
+<div class="container">
+  
+  <!-- slideshow starts here  -->
+  {% for product,range in allProds%}
+  <h1 class="my-4">{{product.0.category}}</h1>
+  <div class="row">
+ 
+
+    
+    
+  <div id="carouselExampleIndicators{{forloop.counter}}" class="col carousel slide" >
+    <div class="carousel-indicators">
+      
+      <button type="button" data-bs-target="#carouselExampleIndicators{{forloop.counter}}" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1" style=" opacity: 1;
+      position: relative;
+      bottom: -29px;
+      background-color: black;"></button>
+      {% for i in range  %}
+     
+     
+      <button type="button" data-bs-target="#carouselExampleIndicators{{forloop.parentloop.counter}}" data-bs-slide-to="{{i}}" aria-label='Slide {{i|add:"1"}} ' style=" opacity: 1;
+      position: relative;
+      bottom: -29px;
+      background-color: black;"></button>
+     {% endfor %}
+    </div>
+  
+    <div class="container carousel-inner no-padding my-3">
+      <div class="carousel-item active">
+        
+
+        {% for i in product %}
+        <div class="col-xs-3 col-sm-3 col-md-3">
+          <div class="card align-items-center" style="width: 18rem">
+            <img src=" /media/{{i.image}}" class="card-img-top" alt="" />
+            <div class="card-body">
+              <h5 id="namepr{{i.id}}" class="card-title">{{i.product_name}}</h5>
+              <h6 id="pricepr{{i.id}}" >Price: Rs {{i.price}}</h6>
+              <p class="card-text">
+                {{i.desc|slice:"0:23"}}...
+              </p>
+             <span id="divpr{{i.id}}"  class="divpr "> <button id="pr{{i.id}}" class="btn btn-primary cart">Add to Cart</button></span>
+            <a href="/shop/products/{{i.id}}">  <button id="qv{{i.id}}" class="btn btn-primary view">Quick View</button>
+           </a> </div>
+          </div>
+        </div>
+        {% if forloop.counter|divisibleby:4 and forloop.counter > 0 and not forloop.last %}
+      </div> <div class="carousel-item ">
+
+        {% endif %}
+
+        {%  endfor  %}
+        </div>
+        
+
+
+      
+    </div>
+    <a class="carousel-control-prev" data-bs-target="#carouselExampleIndicators{{forloop.counter}}" data-bs-slide="prev" role="button">
+      <span class="carousel-control-prev-icon"></span>
+     </a>
+     <a class="carousel-control-next" data-bs-target="#carouselExampleIndicators{{forloop.counter}}" data-bs-slide="next" role="button">
+       <span class="carousel-control-next-icon"></span>
+     </a> 
+  </div> 
+  
+     <!-- left and right control for the slide --> 
+     
+    </div>
+        {% endfor %}
+      </div>
+      
+{% endblock %}
+{% block js%}
+
+<script>
+  // cart logic
+ 
+
+      var cart_buttons=document.querySelectorAll('.cart');
+      
+      for(item in cart_buttons){
+           idstr=cart_buttons[item].id
+           if( cart[idstr]!=undefined)
+           {
+            cart_buttons[item].innerHTML="Add More "
+           }
+      }
+  
+
+
+//  $('.cart').click(function()
+//  {
+$('.divpr').on('click','button.cart',function()
+{
+  idstr = this.id.toString();
+       
+        if (cart[idstr] != undefined ) {
+          
+          cart[idstr][0] += 1;
+        }
+        
+        else {
+          qty=1;
+          name=document.getElementById('name'+idstr).innerHTML;
+          price=parseInt(document.getElementById('price'+idstr).innerHTML.toString().slice(10));
+          
+          cart[idstr] = [qty,name,price];
+        }
+        
+        updatecart(cart,idstr);
+        
+        
+
+})
+
+    
+
+
+
+function clearCart()
+{
+cart=JSON.parse(localStorage.getItem('cart'));
+for (var item in cart)
+{
+  document.getElementById('div'+item).innerHTML=' <button id="'+item+'" class="btn btn-primary cart">Add to Cart</button>';
+}
+localStorage.clear();
+cart={};
+updatecart(cart,0);
+}
+  
+  
+  function updatecart(cart,item)
+  {
+    
+     if(item!=0)
+     {
+
+       document.getElementById('div'+item).innerHTML= '<button id="minus'+item+'" class="btn btn-primary minus">-</button>'+'<span id="val'+item+'" class="mx-2">'+cart[item][0]+'</span>'+'<button id="plus'+item+'" class="btn btn-primary plus">+</button>';
+     }
+      let total_items=0
+      for(let key in cart)
+      {
+        total_items+=cart[key][0];
+      }
+      updatePopover(cart);
+      document.getElementById("cart_item").innerHTML =total_items;
+      localStorage.setItem("cart", JSON.stringify(cart));
+   
+    
+  }
+
+  // if plus or minus is clicked , change the  cart
+
+  $('.divpr').on('click','button.minus',function()
+  {
+    idstr=this.id.toString().slice(5);
+    if(cart[idstr][0]>0)
+    {
+      cart[idstr][0]-=1
+      
+      
+      
+      updatecart(cart,idstr);
+    }
+    if(cart[idstr][0]==0)
+    {
+      document.getElementById('div'+idstr).innerHTML=' <button id="'+idstr+'" class="btn btn-primary cart">Add to Cart</button>'
+      cart[idstr]=undefined;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      
+    }
+    
+  });
+
+
+
+  $('.divpr').on('click','button.plus',function()
+  {
+    idstr=this.id.toString().slice(4);
+    
+    cart[idstr][0]+=1
+    updatecart(cart,idstr);
+   
+  
+  });
+
+  function updatePopover(cart)
+  {
+   
+    var popstr="";
+    popstr=popstr+"<h5> Samaans in Your Cart</h5><div class='mx-2 my-2'>"
+    var i=1
+    var total_price=0;
+    for (var item in cart)
+    {
+      if(cart[item][0]!=0){
+
+      
+      
+        total_price+=cart[item][0]*cart[item][2];
+       
+
+        popstr=popstr+"<b>"+i+".</b>  ";
+        popstr=popstr+cart[item][1]+"    Qty: "+cart[item][0]+"        Price: Rs "+cart[item][2]+'<br>';
+        i=i+1;
+      
+
+    }}
+    popstr=popstr+"</div><h6>Total Price: "+total_price+"</h6>"
+    popstr=popstr+'<a href="/shop/checkout" > <button class="btn btn-primary mx-2" id="checkout"> Checkout</button> </a>  <button class="btn btn-primary mx-2" id="clearcart" onclick="clearCart()">Clear Cart</button> ';
+    
+   
+
+ 
+   
+    document.getElementById('popcart').setAttribute("data-bs-content",popstr );
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+// return new bootstrap.Popover(popoverTriggerEl, {'data-bs-html':'true','trigger':'hover'})
+return new bootstrap.Popover(popoverTriggerEl, {'data-bs-html':'true'})
+
+})
+
+  } 
+
+//  bootstrap 5 uses sanitize functiomn to secure the html giving to the element  so we can add our elements to their sanitize allowed items in their list
+  var myDefaultAllowList = bootstrap.Tooltip.Default.allowList
+
+// To allow button elements
+myDefaultAllowList.button = []
+// you can also add attribute to the new added element
+// To allow td elements and data-bs-option attributes on td elements
+myDefaultAllowList.button = ['onclick']
+
+// You can push your custom regex to validate your attributes.
+// Be careful about your regular expressions being too lax
+var myCustomRegex = /^data-my-app-[\w-]+/
+myDefaultAllowList['*'].push(myCustomRegex)
+  
+ 
+   
+
+ updatePopover(cart);
+
+
+   
+    </script>
+
+
+
+{%endblock%}

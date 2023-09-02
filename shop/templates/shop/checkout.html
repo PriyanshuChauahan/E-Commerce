@@ -1,0 +1,109 @@
+{% extends 'shop/basic.html' %}
+
+{% block title%} Checkout- Samaan {% endblock %}
+{% block body%} 
+<div class="container ">
+    <div class="col my-2">
+
+   
+    <h2>Step1- Samaan Express Checkout-Review Your Samaans</h2>
+    <div >
+        <ul class="list-group" id="items">
+            
+          </ul>
+          <span id="span_total_price" style="position: relative; left:80%;"></span>
+    </div>
+ </div>
+ <div class="col my-2">
+    <h2>Step-2 Enter Address and other Details</h2>
+    <form class="row g-3" method="post" action="/shop/checkout/">{% csrf_token%}
+      <input type="hidden" name="itemJson" id="itemJson">
+      <input type="hidden" name="total_amount" id="total_amount">
+       <div class="col-md-6">
+          <label for="inputName" class="form-label">Name</label>
+          <input type="text" class="form-control" id="inputName"  name="inputName" placeholder="Enter Your Name" required>
+        </div> 
+        <div class="col-md-6">
+          <label for="inputEmail" class="form-label">Email</label>
+          <input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Enter Your Email",required>
+        </div>
+        
+        <div class="col-12">
+          <label for="inputAddress" class="form-label">Address</label>
+          <input type="text" class="form-control" id="inputAddress" name="inputAddress" placeholder="Enter Address" required>
+        </div>
+        <div class="col-12">
+          <label for="inputAddress2" class="form-label">Address Line 2</label>
+          <input type="text" class="form-control" id="inputAddress2" name="inputAddress2" placeholder="Enter Address" required>
+        </div>
+        <div class="col-md-6">
+          <label for="inputCity" class="form-label">City</label>
+          <input type="text" class="form-control" id="inputCity" name="inputCity" placeholder="Enter Your City" required>
+        </div>
+        <div class="col-md-4">
+            <label for="inputState" class="form-label">State</label>
+            <input type="text" class="form-control" id="inputState" name="inputState" placeholder="Enter Your State" required>
+          
+        </div>
+        <div class="col-md-2">
+          <label for="inputZip" class="form-label">Zip</label>
+          <input type="number" class="form-control" id="inputZip" name="inputZip" placeholder="Enter Area Zip Code" required>
+        </div>
+        <div class="col-md-4">
+          <label for="inputPhone" class="form-label">Phone No</label>
+          <input type="tel" class="form-control" id="inputPhone" name="inputPhone" placeholder="Enter Your Phone No" required>
+        </div>
+        <div class="col-12">
+          <button id="place" type="submit" class="btn btn-primary">Place Order</button>
+        </div>
+      </form>
+ </div>
+</div>
+{% endblock %}
+{% block js %} 
+<script>
+ if($.isEmptyObject(cart)){
+    
+mystr=`<li class="list-group-item d-flex justify-content-between align-items-center"><p>No items in cart. Please add some samaans in your cart</p><span class="badge bg-primary rounded-pill"></span></li>`
+
+$('#items').append(mystr);
+document.getElementById('place').setAttribute('disabled',true) ;            
+}
+else
+ { let total_price=0;
+   for(item in cart)
+   { let mystr="";
+     if(cart[item]!=undefined )
+     {
+      
+       total_price+=cart[item][2]*cart[item][0];
+       let name=cart[item][1];
+       let qty=cart[item][0];
+       
+       mystr=` <li class="list-group-item d-flex justify-content-between align-items-center">
+               ${name}
+               <span class="badge bg-primary rounded-pill">${qty}</span>
+               </li>`;
+              
+               
+               $('#items').append(mystr);
+              }
+          
+   }
+
+  document.getElementById('span_total_price').innerHTML=`<h5>Total Price : Rs ${total_price}</h5>`;
+   $('#itemJson').val(JSON.stringify(cart));
+   $('#total_amount').val(total_price);
+  }
+  </script>
+
+{% if thank %}
+<script>
+
+  alert('thanks for ordering with us Your id is {{id}}.use it to track your order using our order tracker')
+localStorage.clear();
+document.location='/shop';
+
+</script>
+{% endif%}
+{% endblock%}
